@@ -1,0 +1,5 @@
+{
+  "name": "Copy of 動態定價農產市集",
+  "description": "一個動態定價的農產品市場，價格會根據供給、需求和新鮮度波動。",
+  "requestFramePermissions": []
+}
