@@ -1,35 +1,52 @@
-
 export type UserRole = 'admin' | 'farmer' | 'customer';
 
+// 基礎用戶介面
+export interface BaseUser {
+  id: string;
+  name: string;
+  balance: number;
+}
+
+// 管理員：擁有特殊權限，無特殊屬性
+export interface AdminUser extends BaseUser {
+  role: 'admin';
+}
+
+// 農夫：擁有邀請碼
+export interface FarmerUser extends BaseUser {
+  role: 'farmer';
+  invitationCodes: string[];
+}
+
+// 顧客：擁有背包
 export interface InventoryItem {
   productId: number;
   productName: string;
-  amount: number; // 克數
-  boughtAt: Date;
+  amount: number;
+  boughtAt: string; // ISO Date string
 }
 
-export interface User {
-  id: string;
-  name: string;
-  role: UserRole;
-  balance: number; // 用戶餘額 (顧客是錢包，農夫是營收)
-  inventory: InventoryItem[]; // 顧客買到的東西
-  invitationCodes: string[]; // 擁有的邀請碼 (僅農夫使用)
+export interface CustomerUser extends BaseUser {
+  role: 'customer';
+  inventory: InventoryItem[];
 }
+
+// 聯合型別：TypeScript 會自動根據 role 判斷可用的屬性
+export type User = AdminUser | FarmerUser | CustomerUser;
 
 export interface Product {
   id: number;
-  farmerId: string; // 連結到上架的農夫
+  farmerId: string;
   farmerName: string;
   name: string;
-  basePrice: number; // 底價 (每100g)
-  currentPrice: number; // 當前價格 (每100g)
-  stock: number; // 庫存 (g)
+  basePrice: number;
+  currentPrice: number;
+  stock: number;
   soldAcc: number;
-  lastSaleTime: Date;
+  lastSaleTime: string; // ISO Date string
   noSaleMinutes: number;
   imageSeed: number;
-  imageUrl?: string; // 新增：實拍照片 (Base64)
+  imageUrl?: string;
 }
 
 export interface Notification {
@@ -37,9 +54,3 @@ export interface Notification {
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
 }
-
-export type MarketAction = 
-  | { type: 'ADD_PRODUCT'; payload: Omit<Product, 'id' | 'soldAcc' | 'lastSaleTime' | 'noSaleMinutes' | 'currentPrice' | 'imageSeed'> }
-  | { type: 'BUY_PRODUCT'; payload: { id: number; amount: number } }
-  | { type: 'DELETE_PRODUCT'; payload: { id: number } }
-  | { type: 'SIMULATE_TIME' };
