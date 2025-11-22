@@ -5,7 +5,7 @@ import { ProductCard } from './components/ProductCard';
 import { MarketStats } from './components/MarketStats';
 import { LoginScreen } from './components/LoginScreen';
 import { Product, Notification, User, UserRole } from './types';
-import { ShoppingBag, X, LogOut, User as UserIcon, Sprout } from 'lucide-react';
+import { ShoppingBag, X, LogOut, User as UserIcon, Sprout, Search, ArrowUpDown, Filter } from 'lucide-react';
 import { Button } from './components/ui/Button';
 
 // 產生隨機邀請碼
@@ -70,6 +70,10 @@ const App: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  // 搜尋與排序狀態
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<'newest' | 'price-asc' | 'price-desc' | 'stock-asc'>('newest');
 
   // Derived State: 確保 currentUser 永遠與 allUsers 同步
   const currentUser = useMemo(() => 
@@ -326,6 +330,32 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // --- 篩選與排序邏輯 ---
+  const filteredAndSortedProducts = useMemo(() => {
+      let result = [...products];
+
+      // 1. 搜尋過濾
+      if (searchQuery.trim()) {
+          const query = searchQuery.toLowerCase();
+          result = result.filter(p => 
+              p.name.toLowerCase().includes(query) || 
+              p.farmerName.toLowerCase().includes(query)
+          );
+      }
+
+      // 2. 排序
+      result.sort((a, b) => {
+          switch (sortOption) {
+              case 'price-asc': return a.currentPrice - b.currentPrice;
+              case 'price-desc': return b.currentPrice - a.currentPrice;
+              case 'stock-asc': return a.stock - b.stock;
+              case 'newest': default: return b.id - a.id;
+          }
+      });
+
+      return result;
+  }, [products, searchQuery, sortOption]);
+
   // 如果沒有登入，顯示登入畫面
   if (!currentUser) {
     return (
@@ -404,14 +434,48 @@ const App: React.FC = () => {
          <div className="lg:col-span-3">
              <MarketStats products={products} currentUser={currentUser} />
 
+             {/* 搜尋與排序工具列 */}
+             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                 <div className="relative w-full md:w-auto md:flex-1 max-w-md">
+                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                         <Search className="h-4 w-4 text-gray-400" />
+                     </div>
+                     <input
+                         type="text"
+                         placeholder="搜尋產品或農夫..."
+                         value={searchQuery}
+                         onChange={(e) => setSearchQuery(e.target.value)}
+                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition duration-150 ease-in-out"
+                     />
+                 </div>
+                 
+                 <div className="flex items-center gap-2 w-full md:w-auto">
+                     <div className="relative flex-1 md:flex-none">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                             <ArrowUpDown className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <select
+                            value={sortOption}
+                            onChange={(e) => setSortOption(e.target.value as any)}
+                            className="block w-full md:w-48 pl-10 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm rounded-lg bg-gray-50"
+                        >
+                            <option value="newest">最新上架</option>
+                            <option value="price-asc">價格: 低 → 高</option>
+                            <option value="price-desc">價格: 高 → 低</option>
+                            <option value="stock-asc">庫存: 少 → 多</option>
+                        </select>
+                     </div>
+                 </div>
+             </div>
+
              <div className="flex justify-between items-center mb-4">
                  <h2 className="text-xl font-bold text-gray-900">
-                     市場現況 ({products.length} 項產品)
+                     市場現況 <span className="text-sm font-normal text-gray-500 ml-2">({filteredAndSortedProducts.length} 項產品)</span>
                  </h2>
              </div>
 
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                 {products.map(product => (
+                 {filteredAndSortedProducts.map(product => (
                      <ProductCard 
                         key={product.id}
                         product={product}
@@ -420,10 +484,36 @@ const App: React.FC = () => {
                         onDelete={handleDeleteProduct}
                      />
                  ))}
-                 {products.length === 0 && (
-                     <div className="col-span-full py-12 text-center text-gray-500 bg-white rounded-xl border border-dashed border-gray-300">
-                         <p className="mb-2">市場目前空空如也</p>
-                         <p className="text-sm">等待農夫上架新鮮產品...</p>
+                 
+                 {/* 空狀態處理 */}
+                 {filteredAndSortedProducts.length === 0 && (
+                     <div className="col-span-full py-16 text-center text-gray-500 bg-white rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center">
+                         <div className="bg-gray-50 p-4 rounded-full mb-4">
+                             {products.length === 0 ? (
+                                 <Sprout className="w-8 h-8 text-gray-400" />
+                             ) : (
+                                 <Search className="w-8 h-8 text-gray-400" />
+                             )}
+                         </div>
+                         {products.length === 0 ? (
+                             <>
+                                 <p className="text-lg font-medium text-gray-900 mb-1">市場目前空空如也</p>
+                                 <p className="text-sm text-gray-500">等待農夫上架新鮮產品...</p>
+                             </>
+                         ) : (
+                             <>
+                                 <p className="text-lg font-medium text-gray-900 mb-1">找不到相關商品</p>
+                                 <p className="text-sm text-gray-500">試試看其他關鍵字？</p>
+                                 <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="mt-4"
+                                    onClick={() => setSearchQuery('')}
+                                 >
+                                     清除搜尋條件
+                                 </Button>
+                             </>
+                         )}
                      </div>
                  )}
              </div>
