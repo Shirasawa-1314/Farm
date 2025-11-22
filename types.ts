@@ -1,29 +1,25 @@
 export type UserRole = 'admin' | 'farmer' | 'customer';
 
-// 基礎用戶介面
 export interface BaseUser {
   id: string;
   name: string;
   balance: number;
 }
 
-// 管理員：擁有特殊權限，無特殊屬性
 export interface AdminUser extends BaseUser {
   role: 'admin';
 }
 
-// 農夫：擁有邀請碼
 export interface FarmerUser extends BaseUser {
   role: 'farmer';
   invitationCodes: string[];
 }
 
-// 顧客：擁有背包
 export interface InventoryItem {
   productId: number;
   productName: string;
   amount: number;
-  boughtAt: string; // ISO Date string
+  boughtAt: string;
 }
 
 export interface CustomerUser extends BaseUser {
@@ -31,7 +27,6 @@ export interface CustomerUser extends BaseUser {
   inventory: InventoryItem[];
 }
 
-// 聯合型別：TypeScript 會自動根據 role 判斷可用的屬性
 export type User = AdminUser | FarmerUser | CustomerUser;
 
 export interface Product {
@@ -43,7 +38,7 @@ export interface Product {
   currentPrice: number;
   stock: number;
   soldAcc: number;
-  lastSaleTime: string; // ISO Date string
+  lastSaleTime: string;
   noSaleMinutes: number;
   imageSeed: number;
   imageUrl?: string;
