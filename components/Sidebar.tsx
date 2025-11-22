@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useRef } from 'react';
 import { Button } from './ui/Button';
-import { Clock, Plus, Sprout, Lock, Wallet, Package, TrendingUp, Users, DollarSign, Share2, Copy, Camera, Image as ImageIcon } from 'lucide-react';
+import { Clock, Plus, Sprout, Wallet, Package, TrendingUp, Users, DollarSign, Share2, Copy, Camera, Image as ImageIcon } from 'lucide-react';
 import { User } from '../types';
 
 interface SidebarProps {
@@ -78,11 +78,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, allUsers, onAddPr
              {currentUser.role === 'farmer' && (
                  <p className="text-xs text-blue-600 mt-2 flex items-center">
                     <TrendingUp className="w-3 h-3 mr-1" /> 銷售收益已入帳
-                 </p>
-             )}
-             {currentUser.role === 'customer' && (
-                 <p className="text-xs text-blue-600 mt-2 flex items-center">
-                    <Lock className="w-3 h-3 mr-1" /> LINE 聯繫 @shirasawa1314 （含@)
                  </p>
              )}
         </div>
@@ -189,25 +184,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, allUsers, onAddPr
                       <p className="text-xs text-gray-500 italic">目前無可用邀請碼</p>
                   )}
               </div>
-              <Button 
-                onClick={onBuyInvitationCode} 
-                fullWidth 
-                size="sm" 
-                className="bg-orange-500 hover:bg-orange-600 text-white"
-                disabled={currentUser.balance < 3000}
-              >
-                  <Plus className="w-4 h-4 mr-1" /> 產生邀請碼 ($3,000)
-              </Button>
+              {currentUser.balance >= 3000 && (
+                <Button 
+                    onClick={onBuyInvitationCode} 
+                    fullWidth 
+                    size="sm" 
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
+                    <Plus className="w-4 h-4 mr-1" /> 產生邀請碼 ($3,000)
+                </Button>
+              )}
           </div>
       )}
 
+      {canAddProduct && (
       <div className="border-t border-gray-200 pt-6">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
           <Sprout className="text-emerald-600" />
           農夫後台
         </h2>
         
-        {canAddProduct ? (
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-4">
                <p className="text-xs text-emerald-800">
@@ -281,23 +277,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, allUsers, onAddPr
               上架產品
             </Button>
           </form>
-        ) : (
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
-            <Lock className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-            <p className="text-xs text-gray-500">
-              顧客無法上架產品。
-            </p>
-          </div>
-        )}
       </div>
+      )}
 
+      {canSimulateTime && (
       <div className="border-t border-gray-200 pt-6">
         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
           <Clock className="text-amber-500" />
           市場控制
         </h2>
         
-        {canSimulateTime ? (
           <>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
               <p className="text-xs text-amber-800 leading-relaxed">
@@ -309,16 +298,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentUser, allUsers, onAddPr
               模擬經過 30 分鐘
             </Button>
           </>
-        ) : (
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
-            <Lock className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-            <p className="text-xs text-gray-500">
-              僅管理員可操作。
-            </p>
-          </div>
-        )}
       </div>
+      )}
     </div>
   );
 };
-    

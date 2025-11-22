@@ -58,7 +58,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ existingUsers, onLogin
             <div className="inline-flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-full mb-4">
               <Sprout className="w-8 h-8 text-emerald-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">農產市集登入</h1>
+            <h1 className="text-2xl font-bold text-gray-900">白澤農產市集登入</h1>
             <p className="text-gray-500 mt-2">選擇現有帳號或建立新身份</p>
           </div>
 

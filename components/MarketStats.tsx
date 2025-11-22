@@ -19,12 +19,8 @@ export const MarketStats: React.FC<MarketStatsProps> = ({ products, currentUser 
 
         // 2. 針對每個產品，找出市場上同名(或關鍵字相符)的競品
         return myProducts.map(myProd => {
-            // 關鍵字匹配：只要名稱互相包含即視為競品 (例如 "有機小蕃茄" vs "小蕃茄")
-            // 並且排除掉自己 (ID 不同)
-            const competitors = products.filter(p => 
-                (p.name.includes(myProd.name) || myProd.name.includes(p.name)) && 
-                p.id !== myProd.id
-            );
+            // 簡單的關鍵字匹配：完全同名
+            const competitors = products.filter(p => p.name === myProd.name && p.id !== myProd.id);
             
             let marketAvgPrice = 0;
             if (competitors.length > 0) {
@@ -35,8 +31,8 @@ export const MarketStats: React.FC<MarketStatsProps> = ({ products, currentUser 
             return {
                 name: myProd.name,
                 "我的價格": myProd.currentPrice,
-                "市場相似品均價": marketAvgPrice > 0 ? marketAvgPrice : null, // 如果沒有競品，顯示 null
-                competitorCount: competitors.length
+                "市場同品項均價": marketAvgPrice > 0 ? marketAvgPrice : null, // 如果沒有競品，顯示 null
+                isMonopoly: competitors.length === 0 // 標記是否為獨家
             };
         });
     } 
@@ -50,7 +46,7 @@ export const MarketStats: React.FC<MarketStatsProps> = ({ products, currentUser 
   }, [products, currentUser]);
 
   if (currentUser.role === 'customer') {
-      // 顧客不需要看到太複雜的分析
+      // 顧客不需要看到太複雜的分析，或者可以維持原樣
       return null; 
   }
 
@@ -63,7 +59,7 @@ export const MarketStats: React.FC<MarketStatsProps> = ({ products, currentUser 
           </h3>
           {currentUser.role === 'farmer' && (
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  系統自動偵測產品關鍵字
+                  僅顯示您上架的品項與同名產品比較
               </span>
           )}
       </div>
@@ -93,7 +89,7 @@ export const MarketStats: React.FC<MarketStatsProps> = ({ products, currentUser 
                 {currentUser.role === 'farmer' ? (
                     <>
                         <Bar dataKey="我的價格" fill="#10b981" name="我的價格" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="市場相似品均價" fill="#6b7280" name="市場均價 (相似品)" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="市場同品項均價" fill="#6b7280" name="市場均價 (同品項)" radius={[4, 4, 0, 0]} />
                     </>
                 ) : (
                     <>
@@ -108,7 +104,7 @@ export const MarketStats: React.FC<MarketStatsProps> = ({ products, currentUser 
       
       {currentUser.role === 'farmer' && (
           <p className="text-xs text-gray-400 mt-2">
-              * 圖表顯示您的產品價格與市場上名稱相似產品的平均價格對比。
+              * 系統自動比對與您產品名稱完全相同的其他賣家產品價格平均值。
           </p>
       )}
     </div>
